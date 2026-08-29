@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-init
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-weight: "5"
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mongo-init
+          image: mongo:7.0
+          command:
+            - mongosh
+            - "mongodb://{{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }}:{{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }}@mongodb:27017/admin"
+            - --eval
+            - |
+              db.getSiblingDB("sausage-store").createUser({
+                user: "reports",
+                pwd: "reportspassword",
+                roles: [{ role: "readWrite", db: "sausage-store" }]
+              })
