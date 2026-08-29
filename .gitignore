@@ -1,1 +1,2 @@
-.envbackend/target/
+.env
+backend/target/
