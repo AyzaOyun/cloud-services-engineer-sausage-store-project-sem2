@@ -3,8 +3,9 @@ kind: Job
 metadata:
   name: mongodb-init
   annotations:
-    helm.sh/hook: post-install
+    helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "5"
+    helm.sh/hook-delete-policy: before-hook-creation
 spec:
   template:
     spec:
@@ -12,9 +13,16 @@ spec:
       containers:
         - name: mongo-init
           image: mongo:7.0
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
           command:
             - mongosh
-            - "mongodb://{{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }}:{{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }}@mongodb:27017/admin"
+            - "mongodb://root:rootpassword@mongodb:27017/admin"
             - --eval
             - |
               db.getSiblingDB("sausage-store").createUser({
